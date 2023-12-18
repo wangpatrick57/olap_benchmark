@@ -11,7 +11,7 @@
 ##
 ## Postconditions:
 ##  * initdb will be called on pgdata_dpath
-##  * A postgres instance will be run with the pg_ctl in bin_dpath on port
+##  * A postgres instance will be run using pg_ctl in bin_dpath on port
 
 parse_args() {
   USAGE="usage: $0 pgdata_dpath bin_dpath port"
@@ -70,7 +70,8 @@ check_system() {
 }
 
 try_start_instance() {
-  initdb --pgdata $pgdata_dpath &>/dev/null
+  # initdb (will create clean postgresql.conf)
+  initdb -D $pgdata_dpath >/dev/null
   if [ "$?" -eq "0" ]; then
     echo "PASS: initdb ran successfully"
   else
@@ -78,11 +79,31 @@ try_start_instance() {
     exit 1
   fi
 
-  $bin_dpath/pg_ctl start &>/dev/null
-  if [ "$?" -eq "0" ]; then
-    echo "PASS: started postgres"
+  # configure port in postgresql.conf, for use by pg_ctl
+  CONF_FNAME="postgresql.conf"
+  DEFAULT_PORT_STRING="#port = 5432"
+  conf_fpath="$pgdata_dpath/$CONF_FNAME"
+  if grep -q "$DEFAULT_PORT_STRING" "$conf_fpath"; then
+    echo "PASS: \"$DEFAULT_PORT_STRING\" found in conf_fpath ($conf_fpath)"
   else
-    echo >&2 "FAILURE: pg_ctl start failed. There is likely an existing running instance"
+    echo >&2 "FAILURE: \"$DEFAULT_PORT_STRING\" not found in conf_fpath ($conf_fpath)"
+    exit 1
+  fi
+  # -i edits in place. the '' after -i means "don't make a backup". it's a required arg on MacOS
+  sed -i'' "s/$DEFAULT_PORT_STRING/port = $port/" $conf_fpath
+  if [ "$?" -eq "0" ]; then
+    echo "PASS: sed to replace port with $port succeeded"
+  else
+    echo >&2 "FAILURE: sed to replace port with $port failed"
+    exit 1
+  fi
+
+  # pg_ctl start
+  $bin_dpath/pg_ctl start -D $pgdata_dpath >/dev/null
+  if [ "$?" -eq "0" ]; then
+    echo "PASS: started postgres with pg_ctl"
+  else
+    echo >&2 "FAILURE: pg_ctl failed. Check logs in pgdata_dpath ($pgdata_dpath)"
     exit 1
   fi
 }
