@@ -1,5 +1,4 @@
 #!/bin/bash
-
 ## Preconditions:
 ##  * All tools installed
 ##  * PGDATA points to an empty directory
@@ -8,7 +7,6 @@
 ## Postconditions:
 ##  * PGDATA will be an initialized directory
 ##  * A postgres instance will be running
-##
 
 check_tools_installed() {
   PG_TOOLS=("postgres" "psql" "pg_ctl")
@@ -68,6 +66,8 @@ try_start_postgres() {
   fi
 }
 
+
+# main
 check_tools_installed
 check_pgdata_clean
 run_initdb
