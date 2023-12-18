@@ -1,63 +1,84 @@
 #!/bin/bash
+## Parameters:
+##  * pgdata_dpath: The --pgdata directory for this Postgres instance
+##  * bin_dpath: The bin directory with pg_ctl
+##  * port: The port to run the Postgres instance on
+##
 ## Preconditions:
-##  * All tools installed
-##  * PGDATA points to an empty directory
-##  * No postgres instance is running
+##  * pgdata_dpath is an empty directory
+##  * The right executables are available in bin_dpath
+##  * No process is running on the port
 ##
 ## Postconditions:
-##  * PGDATA will be an initialized directory
-##  * A postgres instance will be running
+##  * initdb will be called on pgdata_dpath
+##  * A postgres instance will be run with the pg_ctl in bin_dpath on port
 
-check_tools_installed() {
-  PG_TOOLS=("postgres" "psql" "pg_ctl")
+parse_args() {
+  USAGE="usage: $0 pgdata_dpath bin_dpath port"
+  if [ "$#" -ne "3" ]; then
+    echo >&2 "$USAGE"
+    exit 1
+  fi
+  pgdata_dpath=$1
+  bin_dpath=$2
+  port=$3
+}
+
+check_system() {
+  # check tools
+  lsof -v &>/dev/null
+  if [ "$?" -eq "0" ]; then
+    echo "PASS: lsof is installed"
+  else
+    echo >&2 "FAILURE: lsof is not installed"
+    exit 1
+  fi
+
+  # check pgdata_dpath
+  if [ -d "$pgdata_dpath" ]; then
+    echo "PASS: pgdata_dpath ($pgdata_dpath) is an existent directory"
+  else
+    echo >&2 "FAILURE: pgdata_dpath ($pgdata_dpath) does not exist"
+    exit 1
+  fi
+  if [ "$(ls -A "$pgdata_dpath")" ]; then
+    echo >&2 "FAILURE: pgdata_dpath ($pgdata_dpath) is not an empty directory"
+    exit 1
+  else
+    echo "PASS: pgdata_dpath ($pgdata_dpath) is an empty directory"
+  fi
+
+  # check bin_dpath
+  PG_TOOLS=("pg_ctl")
   for pg_tool in "${PG_TOOLS[@]}"; do
-    $pg_tool --version &>/dev/null
-    if [ "$?" -eq "0" ]; then
-      echo "PASS: $pg_tool is installed"
+    pg_tool_fpath="$bin_dpath/$pg_tool"
+    if [ -f "$pg_tool_fpath" ]; then
+      echo "PASS: pg_tool_fpath ($pg_tool_fpath) exists"
     else
-      echo >&2 "FAILURE: $pg_tool is not installed"
+      echo >&2 "FAILURE: pg_tool_fpath ($pg_tool_fpath) does not exist"
       exit 1
     fi
   done
-}
 
-check_pgdata_clean() {
-  if [ -z "$PGDATA" ]; then
-    echo >&2 "FAILURE: PGDATA is empty"
+  # check port
+  if lsof -i :$port &> /dev/null; then
+    echo >&2 "FAILURE: another process is running on port ($port)"
     exit 1
   else
-    echo "PASS: PGDATA ($PGDATA) is set"
-  fi
-
-  # I chose to enforce that PGDATA is an empty directory instead of allowing it to not exist since
-  # this makes the script's logic much simpler
-  if [ -d "$PGDATA" ]; then
-    echo "PASS: PGDATA ($PGDATA) is an existent directory"
-  else
-    echo >&2 "FAILURE: PGDATA ($PGDATA) does not exist"
-    exit 1
-  fi
-
-  if [ "$(ls -A "$PGDATA")" ]; then
-    echo >&2 "FAILURE: PGDATA ($PGDATA) is not an empty directory"
-    exit 1
-  else
-    echo "PASS: PGDATA ($PGDATA) is an empty directory"
+    echo "PASS: port ($port) is free"
   fi
 }
 
-run_initdb() {
-  initdb &>/dev/null
+try_start_instance() {
+  initdb --pgdata $pgdata_dpath &>/dev/null
   if [ "$?" -eq "0" ]; then
     echo "PASS: initdb ran successfully"
   else
     echo >&2 "FAILURE: initdb did not run successfully"
     exit 1
   fi
-}
 
-try_start_postgres() {
-  pg_ctl start &>/dev/null
+  $bin_dpath/pg_ctl start &>/dev/null
   if [ "$?" -eq "0" ]; then
     echo "PASS: started postgres"
   else
@@ -68,8 +89,7 @@ try_start_postgres() {
 
 
 # main
-check_tools_installed
-check_pgdata_clean
-run_initdb
-try_start_postgres
+parse_args "$@"
+check_system
+try_start_instance
 echo "SUCCESS: initialization complete"
