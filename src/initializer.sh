@@ -1,5 +1,15 @@
 #!/bin/bash
 
+## Preconditions:
+##  * All tools installed
+##  * PGDATA points to an empty directory
+##  * No postgres instance is running
+##
+## Postconditions:
+##  * PGDATA will be an initialized directory
+##  * A postgres instance will be running
+##
+
 check_tools_installed() {
   PG_TOOLS=("postgres" "psql" "pg_ctl")
   for pg_tool in "${PG_TOOLS[@]}"; do
