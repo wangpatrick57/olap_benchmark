@@ -90,7 +90,7 @@ try_start_instance() {
     exit 1
   fi
   # -i edits in place. the '' after -i means "don't make a backup". it's a required arg on MacOS
-  sed -i'' "s/$DEFAULT_PORT_STRING/port = $port/" $conf_fpath
+  sed -i '' "s/$DEFAULT_PORT_STRING/port = $port/" $conf_fpath
   if [ "$?" -eq "0" ]; then
     echo "PASS: sed to replace port with $port succeeded"
   else
