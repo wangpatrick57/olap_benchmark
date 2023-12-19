@@ -1,1 +1,0 @@
-In the demo, I show how to use `initializer.sh` to run two instances of the system installation of Postgres on different ports.
