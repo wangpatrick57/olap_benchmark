@@ -1,9 +1,9 @@
 # Architectural Overview
 ## Cluster Setup
-<img src="https://github.com/wangpatrick57/parkbench/assets/20631215/543cb21f-42c9-4e60-8fb5-c196a498e3d2" width="400">
+<img src="https://github.com/wangpatrick57/parkbench/assets/20631215/543cb21f-42c9-4e60-8fb5-c196a498e3d2" width="600">
 
 ## Node Internals
-<img src="https://github.com/wangpatrick57/parkbench/assets/20631215/14610d56-9962-46a1-83e7-c464f7132e40" width="600">
+<img src="https://github.com/wangpatrick57/parkbench/assets/20631215/14610d56-9962-46a1-83e7-c464f7132e40" width="800">
 
 
 **Local Node:**
