@@ -1,6 +1,6 @@
 /**
- * # Run Environment
- * Worker node
+ * # Environment
+ * Run on worker nodes
  * 
  * # Arguments
  *  * `pgdata_dpath` - The data directory for this Postgres instance
@@ -16,4 +16,6 @@
  * # Notes
  *  * `worker_pg_start` is separate from `worker_pg_init` because start happens every time a node crashes and comes back but init only happens once
  */
-fn main() {}
+fn main() {
+    
+}
