@@ -11,6 +11,9 @@
 ##
 ## Postconditions:
 ##  * initdb will be called on pgdata_dpath
+##
+## Notes:
+##  * worker_pg_start is separate from worker_pg_init because start happens every time a node crashes and comes back but init only happens once
 
 SCRNAME=$(basename $0)
 

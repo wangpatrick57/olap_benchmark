@@ -12,6 +12,9 @@
 ##
 ## Postconditions:
 ##  * The postgres in pgbin_dpath will be started with pgdata_dpath as its directory
+##
+## Notes:
+##  * worker_pg_start is separate from worker_pg_init because start happens every time a node crashes and comes back but init only happens once
 
 SCRNAME=$(basename $0)
 PGPORT=5432
