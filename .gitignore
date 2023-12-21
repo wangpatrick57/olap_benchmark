@@ -1,1 +1,3 @@
 /target
+*pat_debug*
+.DS_Store
